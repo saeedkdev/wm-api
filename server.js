@@ -34,6 +34,20 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
+const noteSchema = new mongoose.Schema({
+    created_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+}, { timestamps: true });
+
+const Note = mongoose.model('Note', noteSchema);
+
+const blockSchema = new mongoose.Schema({
+    note: { type: mongoose.Schema.Types.ObjectId, ref: 'Note' },
+    type: { type: String, required: true },
+    properties: { type: Object, required: true },
+}, { timestamps: true });
+
+const Block = mongoose.model('Block', blockSchema);
+
 app.get('/', (req, res) => {
     res.send('Hello World');
 });
