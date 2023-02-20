@@ -1,25 +1,31 @@
 require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
+import express from 'express';
+// const mongoose = require('mongoose');
+import mongoose, {ConnectOptions} from 'mongoose';
+// const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
+// const bcrypt = require('bcryptjs');
+import bcrypt from 'bcryptjs';
 
-const app = express();
-const bodyParser = require('body-parser');
+const app : express.Application = express();
+// const bodyParser = require('body-parser');
+import bodyParser from 'body-parser';
 // const upload = multer(); // for parsing multipart/form-data
 
 app.use(bodyParser.json());
 
-const port = process.env.PORT || 3000;
+const port : number = 3000;
 const hostname = process.env.HOSTNAME || 'localhost';
+const token_secret : string = process.env.TOKEN_SECRET || '';
 
 app.listen(port, hostname, () => {
     console.log(`Server running at http://${hostname}:${port}/`);
 });
 
+const mongoUrl : string = process.env.MONGO_URL || '';
+
 mongoose.connect(
-    process.env.MONGO_URL,
-    { useNewUrlParser: true },
+    mongoUrl, {},
     () => {
         console.log('Connected to DB');
     });
@@ -48,8 +54,8 @@ const blockSchema = new mongoose.Schema({
 
 const Block = mongoose.model('Block', blockSchema);
 
-app.get('/', (req, res) => {
-    res.send('Hello World');
+app.get('/', (_req, _res) => {
+    _res.send('Hello World');
 });
 
 app.post('/register', async (req, res) => {
@@ -80,18 +86,18 @@ app.post('/login', async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.send('Invalid Login Information');
 
-    const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
+    const token = jwt.sign({ _id: user._id }, token_secret);
     if (!token) return res.send('Token not valid');
 
     res.header('auth-token', token).send(token);
 });
 
-function validateToken(req, res, next) {
+function validateToken(req:any, res:any, next:any) {
     const authToken = req.header('auth-token');
     const token = authToken && authToken.split(' ')[1];
     if (!token) return res.status(401).send('Access Denied');
 
-    jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {
+    jwt.verify(token, token_secret, (err:any, user:any) => {
         if (err) return res.status(403).send('Invalid Token');
         req.user = user;
         next();
@@ -99,6 +105,6 @@ function validateToken(req, res, next) {
 }
 
 app.get('/notes', validateToken, async (req, res) => {
-    const notes = await Note.find({ user: req.user._id });
-    res.send(notes);
+    // const notes = await Note.find({ user: req.user._id });
+    // res.send(notes);
 });
