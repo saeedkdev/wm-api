@@ -1,16 +1,22 @@
 require('dotenv').config();
 import express from 'express';
-// const mongoose = require('mongoose');
 import mongoose, {ConnectOptions} from 'mongoose';
-// const jwt = require('jsonwebtoken');
 import jwt from 'jsonwebtoken';
-// const bcrypt = require('bcryptjs');
 import bcrypt from 'bcryptjs';
 
+// cors
+import cors from 'cors';
+
+// allow all origins
+const corsOptions = {
+    origin: '*',
+    optionsSuccessStatus: 200,
+};
+
+
 const app : express.Application = express();
-// const bodyParser = require('body-parser');
+app.use(cors(corsOptions));
 import bodyParser from 'body-parser';
-// const upload = multer(); // for parsing multipart/form-data
 
 app.use(bodyParser.json());
 
@@ -86,7 +92,9 @@ app.post('/login', async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.send('Invalid Login Information');
 
-    const token = jwt.sign({ _id: user._id }, token_secret);
+    // const token = jwt.sign({ _id: user._id }, token_secret);
+    // token with expiration of 30days and secret
+    const token = jwt.sign({ _id: user._id }, token_secret, { expiresIn: '30d' });
     if (!token) return res.send('Token not valid');
 
     res.header('auth-token', token).send(token);
